@@ -1,7 +1,6 @@
 package frc.robot;
 
 import frc.robot.commands.AutoSqeuenceCommand;
-import frc.robot.commands.GoToTargetCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.XboxController;
@@ -10,19 +9,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class RobotContainer {
-  
-  private final DriveSubsystem drive = new DriveSubsystem();
-  private final XboxController controller =
+  private Command autonomousCommand;
+  private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  private final XboxController m_driverController =
       new XboxController(Constants.kOperatorConstants.kDriverControllerPort);
 
-  private final SendableChooser<Integer> driveMode = new SendableChooser<>();
+  private final SendableChooser<Integer> m_driveMode = new SendableChooser<>();
 
   public RobotContainer() {
-    driveMode.setDefaultOption("Arcade", 0);
-    driveMode.addOption("Tank", 1);
+    m_driveMode.setDefaultOption("Arcade", 0);
+    m_driveMode.addOption("Tank", 1);
 
     Shuffleboard.getTab("Default")
-        .add("Drive Mode", driveMode)
+        .add("Drive Mode", m_driveMode)
         .withWidget(BuiltInWidgets.kSplitButtonChooser)
         .withSize(2,1)
         .withPosition(8,0);
@@ -33,20 +32,27 @@ public class RobotContainer {
   private void configureBindings() {}
 
   public Command getAutonomousCommand() {
-    return new AutoSqeuenceCommand(drive);
+    return autonomousCommand;
+  }
+
+  public void setAutonomousCommand(Command command) {
+    autonomousCommand = command;
   }
 
   public void autonomousInit() {
     Command auto = getAutonomousCommand();
     if (auto != null) {
       auto.schedule();
+    } else {
+      setAutonomousCommand(new AutoSqeuenceCommand(m_driveSubsystem));
+      getAutonomousCommand().schedule();
     }
   }
 
   public void autonomousPeriodic() {
     Command auto = getAutonomousCommand();
-    if (auto != null && !auto.isScheduled()) {
-      drive.arcade(0, 0);
+    if (auto == null || (auto != null && !auto.isScheduled())) {
+      m_driveSubsystem.arcade(0, 0);
     }
   }
 
@@ -58,33 +64,33 @@ public class RobotContainer {
   }
 
   public void teleopPeriodic() {
-    if (controller.getLeftBumperButton()) {
+    if (m_driverController.getLeftBumperButton()) {
       Pose2d target = getRadialTarget();
       if (target != null) {
-        new GoToTargetCommand(drive, target).schedule();
+        m_driveSubsystem.goToTarget(target, false);
         return;
       }
     }
 
-    if (controller.getRawAxis(2) > Constants.kOperatorConstants.kTriggerThreshold) {
-      new GoToTargetCommand(drive, Constants.kField.kCoralGet).schedule();
+    if (m_driverController.getRawAxis(2) > Constants.kOperatorConstants.kTriggerThreshold) {
+      m_driveSubsystem.goToTarget(Constants.kField.kCoralGet, false);
       return;
     }
 
-    double fwd = -controller.getLeftY();
-    double rot = -controller.getRightX();
-    double rFwd = -controller.getRightY();
+    double fwd = -m_driverController.getLeftY();
+    double rot = -m_driverController.getRightX();
+    double rFwd = -m_driverController.getRightY();
 
-    if (driveMode.getSelected() == 0) {
-      drive.arcade(fwd, rot);
+    if (m_driveMode.getSelected() == 0) {
+      m_driveSubsystem.arcade(fwd, rot);
     } else {
-      drive.tank(fwd, rFwd);
+      m_driveSubsystem.tank(fwd, rFwd);
     }
   }
 
   private Pose2d getRadialTarget() {
-    double x = -controller.getLeftX();
-    double y = -controller.getLeftY();
+    double x = -m_driverController.getLeftX();
+    double y = -m_driverController.getLeftY();
 
     if (Math.hypot(x, y) < Constants.kOperatorConstants.kJoystickDeadband)
       return null;

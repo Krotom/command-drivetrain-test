@@ -80,6 +80,8 @@ public class DriveSubsystem extends SubsystemBase {
     return sim.getPose();
   }
   
+  boolean aligningFinalHeading = false;
+
   public boolean goToTarget(Pose2d target, boolean angleFromTarget) {
     Pose2d current = sim.getPose();
 
@@ -106,12 +108,19 @@ public class DriveSubsystem extends SubsystemBase {
     double turnOut, driveOut;
 
     if (distance > Constants.kDrivePID.kDistanceTolerance) {
+      aligningFinalHeading = false;
       turnOut = turnPID.calculate(headingError, 0);
       driveOut = -drivePID.calculate(distance, 0);
     } else {
+      if (!aligningFinalHeading) {
+        turnPID.reset();
+        System.out.println("PID Reset!");
+        aligningFinalHeading = true;
+      }
       turnOut = turnPID.calculate(finalHeadingError, 0);
       driveOut = 0;
     }
+    
 
     drive.arcadeDrive(driveOut, turnOut);
 

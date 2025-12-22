@@ -28,7 +28,7 @@ public final class Constants {
     public static final double kDriveI = 0.0;
     public static final double kDriveD = 0.0;
 
-    public static final double kDistanceTolerance = 0.1;
+    public static final double kDistanceTolerance = 0.3;
     public static final double kAngleToleranceRad = 0.1;
   }
 
@@ -43,15 +43,15 @@ public final class Constants {
   public static final class kField {
     public static final Pose2d kZeroZero = new Pose2d(0, 0, new Rotation2d());
     public static final Pose2d kFieldMiddle = new Pose2d(4.5, 4.0, new Rotation2d());
-    public static final Pose2d kCoralGet = new Pose2d(1.0, 7.0, new Rotation2d());
+    public static final Pose2d kCoralGet = new Pose2d(1.1, 7.1, new Rotation2d());
 
-    public static final Pose2d kLeftDown  = new Pose2d(3.8, 2.9, new Rotation2d());
-    public static final Pose2d kLeftMid   = new Pose2d(3.2, 4.0, new Rotation2d());
-    public static final Pose2d kLeftUp    = new Pose2d(3.8, 5.1, new Rotation2d());
+    public static final Pose2d kLeftDown  = new Pose2d(3.7, 2.7, new Rotation2d());
+    public static final Pose2d kLeftMid   = new Pose2d(3.0, 4.0, new Rotation2d());
+    public static final Pose2d kLeftUp    = new Pose2d(3.8, 5.3, new Rotation2d());
 
-    public static final Pose2d kRightDown = new Pose2d(5.1, 2.9, new Rotation2d());
-    public static final Pose2d kRightMid  = new Pose2d(5.7, 4.0, new Rotation2d());
-    public static final Pose2d kRightUp   = new Pose2d(5.1, 5.1, new Rotation2d());
+    public static final Pose2d kRightDown = new Pose2d(5.3, 2.7, new Rotation2d());
+    public static final Pose2d kRightMid  = new Pose2d(6.0, 4.0, new Rotation2d());
+    public static final Pose2d kRightUp   = new Pose2d(5.4, 5.3, new Rotation2d());
 
     public static final Pose2d[] kRadialTargets = {
       kRightMid,
