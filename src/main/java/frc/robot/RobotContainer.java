@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class RobotContainer {
-
+  
   private final DriveSubsystem drive = new DriveSubsystem();
   private final XboxController controller =
       new XboxController(Constants.kOperatorConstants.kDriverControllerPort);
@@ -18,8 +18,8 @@ public class RobotContainer {
   private final SendableChooser<Integer> driveMode = new SendableChooser<>();
 
   public RobotContainer() {
-    driveMode.setDefaultOption("Arcade", 1);
-    driveMode.addOption("Tank", 0);
+    driveMode.setDefaultOption("Arcade", 0);
+    driveMode.addOption("Tank", 1);
 
     Shuffleboard.getTab("Default")
         .add("Drive Mode", driveMode)
@@ -61,19 +61,25 @@ public class RobotContainer {
     if (controller.getLeftBumperButton()) {
       Pose2d target = getRadialTarget();
       if (target != null) {
-        new GoToTargetCommand(drive, target, false).schedule();
+        new GoToTargetCommand(drive, target).schedule();
         return;
       }
     }
 
     if (controller.getRawAxis(2) > Constants.kOperatorConstants.kTriggerThreshold) {
-      new GoToTargetCommand(drive, Constants.kField.kCoralGet, false).schedule();
+      new GoToTargetCommand(drive, Constants.kField.kCoralGet).schedule();
       return;
     }
 
     double fwd = -controller.getLeftY();
     double rot = -controller.getRightX();
-    drive.arcade(fwd, rot);
+    double rFwd = -controller.getRightY();
+
+    if (driveMode.getSelected() == 0) {
+      drive.arcade(fwd, rot);
+    } else {
+      drive.tank(fwd, rFwd);
+    }
   }
 
   private Pose2d getRadialTarget() {

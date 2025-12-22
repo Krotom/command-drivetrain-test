@@ -72,10 +72,14 @@ public class DriveSubsystem extends SubsystemBase {
     drive.arcadeDrive(fwd, rot);
   }
 
+  public void tank(double lFwd, double rFwd) {
+    drive.tankDrive(lFwd, rFwd);
+  }
+
   public Pose2d getPose() {
     return sim.getPose();
   }
-
+  
   public boolean goToTarget(Pose2d target, boolean angleFromTarget) {
     Pose2d current = sim.getPose();
 
