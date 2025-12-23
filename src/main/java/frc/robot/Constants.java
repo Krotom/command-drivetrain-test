@@ -29,7 +29,8 @@ public final class Constants {
     public static final double kDriveD = 0.0;
 
     public static final double kDistanceTolerance = 0.3;
-    public static final double kAngleToleranceRad = 0.1;
+    public static final double kAngleToleranceDeg = 1.5;
+    public static final int kArrivedAtTargetCount = 10;
   }
 
   public static final class kDriveSim {

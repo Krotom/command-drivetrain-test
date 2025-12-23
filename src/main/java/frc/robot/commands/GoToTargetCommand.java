@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class GoToTargetCommand extends Command {
@@ -9,6 +10,8 @@ public class GoToTargetCommand extends Command {
   private final DriveSubsystem drive;
   private final Pose2d target;
   private final boolean angleFromTarget;
+
+  private int targetArriveCount = 0;
 
   public GoToTargetCommand(
         DriveSubsystem drive,
@@ -37,11 +40,23 @@ public class GoToTargetCommand extends Command {
 
   @Override
   public boolean isFinished() {
-    return drive.goToTarget(target, angleFromTarget);
+    if (targetArriveCount >= Constants.kDrivePID.kArrivedAtTargetCount) {
+      return true;
+    } else if (drive.goToTarget(target, angleFromTarget)) {
+      targetArriveCount++;
+      return false;
+    } else {
+      return false;
+    }
   }
 
   @Override
   public void end(boolean interrupted) {
-    drive.arcade(0, 0);
+    if (!drive.goToTarget(target, angleFromTarget)) {
+      System.out.println("Re-scheduling GoToTargetCommand because target not reached");
+      new GoToTargetCommand(drive, target).schedule();
+    } else {
+      drive.arcade(0, 0);
+    }
   }
 }

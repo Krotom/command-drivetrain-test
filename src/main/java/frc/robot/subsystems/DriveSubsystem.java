@@ -125,7 +125,7 @@ public class DriveSubsystem extends SubsystemBase {
     drive.arcadeDrive(driveOut, turnOut);
 
     return distance < Constants.kDrivePID.kDistanceTolerance
-        && Math.abs(finalHeadingError) < Constants.kDrivePID.kAngleToleranceRad;
+        && Math.abs(finalHeadingError) < Math.toRadians(Constants.kDrivePID.kAngleToleranceDeg);
   }
 
   @Override
