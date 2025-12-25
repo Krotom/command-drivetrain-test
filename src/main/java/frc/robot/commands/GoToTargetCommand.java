@@ -40,9 +40,9 @@ public class GoToTargetCommand extends Command {
 
   @Override
   public boolean isFinished() {
-    if (targetArriveCount >= Constants.kDrivePID.kArrivedAtTargetCount) {
+    if (targetArriveCount >= Constants.kDrive.kArrivedAtTargetCount) {
       return true;
-    } else if (drive.goToTarget(target, angleFromTarget)) {
+    } else if (drive.atTarget()) {
       targetArriveCount++;
       return false;
     } else {
@@ -52,11 +52,6 @@ public class GoToTargetCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    if (!drive.goToTarget(target, angleFromTarget)) {
-      System.out.println("Re-scheduling GoToTargetCommand because target not reached");
-      new GoToTargetCommand(drive, target).schedule();
-    } else {
       drive.arcade(0, 0);
-    }
   }
 }

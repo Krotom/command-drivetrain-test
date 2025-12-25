@@ -19,7 +19,7 @@ public final class Constants {
     public static final int kRightFollower = 1;
   }
 
-  public static final class kDrivePID {
+  public static final class kDrive {
     public static final double kTurnP = 1.5;
     public static final double kTurnI = 0.0;
     public static final double kTurnD = 0.2;
@@ -31,6 +31,8 @@ public final class Constants {
     public static final double kDistanceTolerance = 0.3;
     public static final double kAngleToleranceDeg = 1.5;
     public static final int kArrivedAtTargetCount = 10;
+
+    public static final double kMaxSpeedMetersPerSecond = 3.0;
   }
 
   public static final class kDriveSim {

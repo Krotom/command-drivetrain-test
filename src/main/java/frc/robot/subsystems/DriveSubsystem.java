@@ -6,6 +6,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.shuffleboard.*;
@@ -33,14 +36,14 @@ public class DriveSubsystem extends SubsystemBase {
       new DifferentialDrive(leftLeader, rightLeader);
 
   private final PIDController turnPID =
-      new PIDController(Constants.kDrivePID.kTurnP,
-                        Constants.kDrivePID.kTurnI,
-                        Constants.kDrivePID.kTurnD);
+      new PIDController(Constants.kDrive.kTurnP,
+                        Constants.kDrive.kTurnI,
+                        Constants.kDrive.kTurnD);
 
   private final PIDController drivePID =
-      new PIDController(Constants.kDrivePID.kDriveP,
-                        Constants.kDrivePID.kDriveI,
-                        Constants.kDrivePID.kDriveD);
+      new PIDController(Constants.kDrive.kDriveP,
+                        Constants.kDrive.kDriveI,
+                        Constants.kDrive.kDriveD);
 
   private final DifferentialDrivetrainSim sim =
       new DifferentialDrivetrainSim(
@@ -68,6 +71,33 @@ public class DriveSubsystem extends SubsystemBase {
         .withSize(8,4);
   }
 
+  public void resetPose(Pose2d pose) {
+    sim.setPose(pose);
+  }
+
+  private final DifferentialDriveKinematics kinematics =
+    new DifferentialDriveKinematics(Constants.kDriveSim.kTrackWidth);
+
+  public ChassisSpeeds getRobotRelativeSpeeds() {
+    DifferentialDriveWheelSpeeds wheelSpeeds =
+        new DifferentialDriveWheelSpeeds(
+            sim.getLeftVelocityMetersPerSecond(),
+            sim.getRightVelocityMetersPerSecond()
+        );
+
+    return kinematics.toChassisSpeeds(wheelSpeeds);
+  }
+
+  public void driveRobotRelative(ChassisSpeeds speeds) {
+    var wheelSpeeds = kinematics.toWheelSpeeds(speeds);
+  
+    wheelSpeeds.desaturate(Constants.kDrive.kMaxSpeedMetersPerSecond);
+  
+    leftLeader.set(wheelSpeeds.leftMetersPerSecond);
+    rightLeader.set(wheelSpeeds.rightMetersPerSecond);
+  }
+
+
   public void arcade(double fwd, double rot) {
     drive.arcadeDrive(fwd, rot);
   }
@@ -81,13 +111,15 @@ public class DriveSubsystem extends SubsystemBase {
   }
   
   boolean aligningFinalHeading = false;
+  double distance;
+  double finalHeadingError;
 
   public boolean goToTarget(Pose2d target, boolean angleFromTarget) {
     Pose2d current = sim.getPose();
 
     double dx = target.getX() - current.getX();
     double dy = target.getY() - current.getY();
-    double distance = Math.hypot(dx, dy);
+    distance = Math.hypot(dx, dy);
 
     double robotHeading = current.getRotation().getRadians();
     double angleToTarget = Math.atan2(dy, dx);
@@ -95,7 +127,7 @@ public class DriveSubsystem extends SubsystemBase {
     double headingError =
         -MathUtil.angleModulus(angleToTarget - robotHeading);
 
-    double finalHeadingError =
+    finalHeadingError =
         angleFromTarget
             ? -MathUtil.angleModulus(target.getRotation().getRadians() - robotHeading)
             : -MathUtil.angleModulus(
@@ -107,13 +139,14 @@ public class DriveSubsystem extends SubsystemBase {
 
     double turnOut, driveOut;
 
-    if (distance > Constants.kDrivePID.kDistanceTolerance) {
+    if (distance > Constants.kDrive.kDistanceTolerance) {
       aligningFinalHeading = false;
       turnOut = turnPID.calculate(headingError, 0);
       driveOut = -drivePID.calculate(distance, 0);
     } else {
       if (!aligningFinalHeading) {
         turnPID.reset();
+        drivePID.reset();
         System.out.println("PID Reset!");
         aligningFinalHeading = true;
       }
@@ -124,8 +157,13 @@ public class DriveSubsystem extends SubsystemBase {
 
     drive.arcadeDrive(driveOut, turnOut);
 
-    return distance < Constants.kDrivePID.kDistanceTolerance
-        && Math.abs(finalHeadingError) < Math.toRadians(Constants.kDrivePID.kAngleToleranceDeg);
+    return distance < Constants.kDrive.kDistanceTolerance
+        && Math.abs(finalHeadingError) < Math.toRadians(Constants.kDrive.kAngleToleranceDeg);
+  }
+
+  public boolean atTarget() {
+    return distance < Constants.kDrive.kDistanceTolerance
+        && Math.abs(finalHeadingError) < Math.toRadians(Constants.kDrive.kAngleToleranceDeg);
   }
 
   @Override

@@ -45,5 +45,4 @@ public class GoToRadialTargetCommand extends Command {
 
     return Constants.kField.kRadialTargets[sector];
   }
-    
 }

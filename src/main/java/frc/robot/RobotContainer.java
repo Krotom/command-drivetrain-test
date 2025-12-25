@@ -5,12 +5,20 @@ import frc.robot.commands.GoToRadialTargetCommand;
 import frc.robot.commands.GoToTargetCommand;
 import frc.robot.commands.TeleopDefaultCommand;
 import frc.robot.subsystems.DriveSubsystem;
+
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+
+import org.json.simple.parser.ParseException;
+import java.io.IOException;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPLTVController;
 
 public class RobotContainer {
   private Command autonomousCommand;
@@ -19,6 +27,10 @@ public class RobotContainer {
       new XboxController(Constants.kOperatorConstants.kDriverControllerPort);
 
   private final SendableChooser<Integer> m_driveMode = new SendableChooser<>();
+
+  RobotConfig robotConfig;
+
+  
 
   public RobotContainer() {
     m_driveMode.setDefaultOption("Arcade", 0);
@@ -31,6 +43,24 @@ public class RobotContainer {
         .withPosition(8,0);
 
     m_driveSubsystem.setDefaultCommand(new TeleopDefaultCommand(m_driveSubsystem, m_driverController, m_driveMode));
+
+    try {
+      robotConfig = RobotConfig.fromGUISettings();
+    } catch (IOException | ParseException e) {
+        e.printStackTrace();
+        throw new RuntimeException("Failed to load PathPlanner robot config");
+    }
+
+    AutoBuilder.configure(
+        m_driveSubsystem::getPose,
+        m_driveSubsystem::resetPose,
+        m_driveSubsystem::getRobotRelativeSpeeds,
+        m_driveSubsystem::driveRobotRelative,
+        new PPLTVController(0.02),
+        robotConfig,
+        () -> false,
+        m_driveSubsystem
+    );
 
     configureBindings();
   }
