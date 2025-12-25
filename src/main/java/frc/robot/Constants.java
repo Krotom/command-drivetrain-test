@@ -17,6 +17,7 @@ public final class Constants {
     public static final int kLeftFollower = 3;
     public static final int kRightLeader = 0;
     public static final int kRightFollower = 1;
+    public static final int kPigeonID = 4;
   }
 
   public static final class kDrive {

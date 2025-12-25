@@ -1,6 +1,5 @@
 package frc.robot;
 
-import frc.robot.commands.AutoSqeuenceCommand;
 import frc.robot.commands.GoToRadialTargetCommand;
 import frc.robot.commands.GoToTargetCommand;
 import frc.robot.commands.TeleopDefaultCommand;
@@ -21,67 +20,63 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPLTVController;
 
 public class RobotContainer {
-  private Command autonomousCommand;
-  private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
-  private final XboxController m_driverController =
-      new XboxController(Constants.kOperatorConstants.kDriverControllerPort);
+    private Command autonomousCommand;
+    private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+    private final XboxController m_driverController =
+        new XboxController(Constants.kOperatorConstants.kDriverControllerPort);
 
-  private final SendableChooser<Integer> m_driveMode = new SendableChooser<>();
+    private final SendableChooser<Integer> m_driveMode = new SendableChooser<>();
 
-  RobotConfig robotConfig;
+    RobotConfig robotConfig;
 
-  
+    public RobotContainer() {
+      m_driveMode.setDefaultOption("Arcade", 0);
+      m_driveMode.addOption("Tank", 1);
 
-  public RobotContainer() {
-    m_driveMode.setDefaultOption("Arcade", 0);
-    m_driveMode.addOption("Tank", 1);
+      Shuffleboard.getTab("Default")
+          .add("Drive Mode", m_driveMode)
+          .withWidget(BuiltInWidgets.kSplitButtonChooser)
+          .withSize(2,1)
+          .withPosition(8,0);
 
-    Shuffleboard.getTab("Default")
-        .add("Drive Mode", m_driveMode)
-        .withWidget(BuiltInWidgets.kSplitButtonChooser)
-        .withSize(2,1)
-        .withPosition(8,0);
+      m_driveSubsystem.setDefaultCommand(new TeleopDefaultCommand(m_driveSubsystem, m_driverController, m_driveMode));
 
-    m_driveSubsystem.setDefaultCommand(new TeleopDefaultCommand(m_driveSubsystem, m_driverController, m_driveMode));
+      try {
+        robotConfig = RobotConfig.fromGUISettings();
+      } catch (IOException | ParseException e) {
+          e.printStackTrace();
+          throw new RuntimeException("Failed to load PathPlanner robot config");
+      }
 
-    try {
-      robotConfig = RobotConfig.fromGUISettings();
-    } catch (IOException | ParseException e) {
-        e.printStackTrace();
-        throw new RuntimeException("Failed to load PathPlanner robot config");
+      AutoBuilder.configure(
+          m_driveSubsystem::getPose,
+          m_driveSubsystem::resetPose,
+          m_driveSubsystem::getRobotRelativeSpeeds,
+          m_driveSubsystem::driveRobotRelative,
+          new PPLTVController(0.02),
+          robotConfig,
+          () -> false,
+          m_driveSubsystem
+      );
+
+      autonomousCommand = AutoBuilder.buildAuto("MainAuto");
+
+      configureBindings();
     }
 
-    AutoBuilder.configure(
-        m_driveSubsystem::getPose,
-        m_driveSubsystem::resetPose,
-        m_driveSubsystem::getRobotRelativeSpeeds,
-        m_driveSubsystem::driveRobotRelative,
-        new PPLTVController(0.02),
-        robotConfig,
-        () -> false,
-        m_driveSubsystem
-    );
+    private void configureBindings() {
+      new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
+          .whileTrue(new RepeatCommand(new GoToRadialTargetCommand(m_driveSubsystem, m_driverController)));
 
-    configureBindings();
-  }
+      new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+          .onTrue(new GoToTargetCommand(m_driveSubsystem, Constants.kField.kCoralGet));
+    }
 
-  private void configureBindings() {
-    new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
-        .whileTrue(new RepeatCommand(new GoToRadialTargetCommand(m_driveSubsystem, m_driverController)));
+    public Command getAutonomousCommand() {
+      return autonomousCommand;
+    }
 
-    new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
-        .onTrue(new GoToTargetCommand(m_driveSubsystem, Constants.kField.kCoralGet));
-  }
-
-  public Command getAutonomousCommand() {
-    return autonomousCommand;
-  }
-
-  public void setAutonomousCommand() {
-    autonomousCommand = new AutoSqeuenceCommand(m_driveSubsystem);
-  }
-
-  public void stopMotors() {
-    m_driveSubsystem.arcade(0, 0);
-  }
+    public void stopMotors() {
+      m_driveSubsystem.arcade(0, 0);
+    }
 }
