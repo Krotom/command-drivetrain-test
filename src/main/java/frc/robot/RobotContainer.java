@@ -44,23 +44,25 @@ public class RobotContainer {
 
       try {
         robotConfig = RobotConfig.fromGUISettings();
+        AutoBuilder.configure(
+            m_driveSubsystem::getPose,
+            m_driveSubsystem::resetPose,
+            m_driveSubsystem::getRobotRelativeSpeeds,
+            m_driveSubsystem::driveRobotRelative,
+            new PPLTVController(0.02),
+            robotConfig,
+            () -> false,
+            m_driveSubsystem
+        );
       } catch (IOException | ParseException e) {
           e.printStackTrace();
-          throw new RuntimeException("Failed to load PathPlanner robot config");
+          throw new RuntimeException("Failed to load PathPlanner robot config, AutoBuilder not configured");
       }
 
-      AutoBuilder.configure(
-          m_driveSubsystem::getPose,
-          m_driveSubsystem::resetPose,
-          m_driveSubsystem::getRobotRelativeSpeeds,
-          m_driveSubsystem::driveRobotRelative,
-          new PPLTVController(0.02),
-          robotConfig,
-          () -> false,
-          m_driveSubsystem
-      );
-
-      autonomousCommand = AutoBuilder.buildAuto("MainAuto");
+      
+      
+      // we dont use swerve right now
+      // autonomousCommand = AutoBuilder.buildAuto("MainAuto");
 
       configureBindings();
     }

@@ -82,7 +82,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   public DriveSubsystem() {
     SparkMaxConfig follower = new SparkMaxConfig();
-
+    gyro.getGravityVectorZ();
     follower.follow(leftLeader);
     leftFollower.configure(
         follower,
