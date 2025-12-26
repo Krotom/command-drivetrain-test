@@ -179,8 +179,8 @@ public class DriveSubsystem extends SubsystemBase {
   double distance;
   double finalHeadingError;
 
-  public boolean goToTarget(Pose2d target, boolean angleFromTarget) {
-    Pose2d current = sim.getPose();
+  public void goToTarget(Pose2d target, boolean angleFromTarget) {
+    Pose2d current = getPose();
     double dx = target.getX() - current.getX();
     double dy = target.getY() - current.getY();
 
@@ -221,9 +221,6 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     drive.arcadeDrive(driveOut, turnOut);
-
-    return distance < Constants.kDrive.kDistanceTolerance
-        && Math.abs(finalHeadingError) < Math.toRadians(Constants.kDrive.kAngleToleranceDeg);
   }
 
   public boolean atTarget() {

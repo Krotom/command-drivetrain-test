@@ -1,5 +1,6 @@
 package frc.robot;
 
+import frc.robot.commands.AutoSqeuenceCommand;
 import frc.robot.commands.GoToRadialTargetCommand;
 import frc.robot.commands.GoToTargetCommand;
 import frc.robot.commands.TeleopDefaultCommand;
@@ -70,6 +71,10 @@ public class RobotContainer {
 
       new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
           .onTrue(new GoToTargetCommand(m_driveSubsystem, Constants.kField.kCoralGet));
+    }
+
+    public void setAutonomousCommand() {
+      autonomousCommand = new AutoSqeuenceCommand(m_driveSubsystem);
     }
 
     public Command getAutonomousCommand() {

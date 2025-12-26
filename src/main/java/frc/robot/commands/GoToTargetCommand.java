@@ -41,6 +41,7 @@ public class GoToTargetCommand extends Command {
   @Override
   public boolean isFinished() {
     if (targetArriveCount >= Constants.kDrive.kArrivedAtTargetCount) {
+      targetArriveCount = 0;
       return true;
     } else if (drive.atTarget()) {
       targetArriveCount++;

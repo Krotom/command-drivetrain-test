@@ -29,9 +29,9 @@ public final class Constants {
     public static final double kDriveI = 0.0;
     public static final double kDriveD = 0.0;
 
-    public static final double kDistanceTolerance = 0.3;
-    public static final double kAngleToleranceDeg = 1.5;
-    public static final int kArrivedAtTargetCount = 10;
+    public static final double kDistanceTolerance = 0.17;
+    public static final double kAngleToleranceDeg = 1.0;
+    public static final int kArrivedAtTargetCount = 3;
 
     public static final double kMaxSpeedMetersPerSecond = 3.0;
   }
